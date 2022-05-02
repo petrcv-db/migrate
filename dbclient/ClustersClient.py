@@ -294,7 +294,8 @@ class ClustersClient(dbclient):
                 if cid is None:
                     error_message = f'Cluster id must exist in new env for cluster_name: {cluster_name}. ' \
                                     f'Re-import cluster configs.'
-                    raise ValueError(error_message)
+                    # raise ValueError(error_message)
+                    logging.warn(error_message)
                 api = f'/preview/permissions/clusters/{cid}'
                 resp = self.put(api, acl_args)
                 if not logging_utils.log_reponse_error(error_logger, resp):
