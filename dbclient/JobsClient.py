@@ -198,12 +198,18 @@ class JobsClient(ClustersClient):
                 api = f'/preview/permissions/{job_path}'
                 # get acl permissions for jobs
                 acl_perms = self.build_acl_args(acl_conf['access_control_list'], True)
-                acl_create_args = {'access_control_list': acl_perms}
-                acl_resp = self.patch(api, acl_create_args)
-                if not logging_utils.log_reponse_error(error_logger, acl_resp) and 'object_id' in acl_conf:
-                    checkpoint_job_configs_set.write(acl_conf['object_id'])
+                # logging.warn(f"acl_conf: {acl_conf}")
+                # quick fix: filter owner permissions - if there are non, don't do the patch
+                owner_perms = [perm for ac in acl_conf['access_control_list'] for perm in ac['all_permissions'] if perm['permission_level'] == 'IS_OWNER']
+                if not owner_perms:
+                    logging.warn(f"The job {current_job_id} doesn't have an owner, skipping applying permissions")
                 else:
-                    raise RuntimeError("Import job has failed. Refer to the previous log messages to investigate.")
+                    acl_create_args = {'access_control_list': acl_perms}
+                    acl_resp = self.patch(api, acl_create_args)
+                    if not logging_utils.log_reponse_error(error_logger, acl_resp) and 'object_id' in acl_conf:
+                        checkpoint_job_configs_set.write(acl_conf['object_id'])
+                    else:
+                        raise RuntimeError("Import job has failed. Refer to the previous log messages to investigate.")
         # update the imported job names
         self.update_imported_job_names(error_logger, checkpoint_job_configs_set)
 
