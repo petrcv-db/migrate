@@ -193,7 +193,11 @@ class JobsClient(ClustersClient):
                 acl_conf = json.loads(line)
                 if 'object_id' in acl_conf and checkpoint_job_configs_set.contains(acl_conf['object_id']):
                     continue
-                current_job_id = job_id_by_name[acl_conf['job_name']]
+                current_job_id = job_id_by_name.get(acl_conf['job_name'])
+                # quick fix for setting acls to non-existing jobs
+                if not current_job_id:
+                    logging.warn(f"The job with name {acl_conf['job_name']} doesn't exist in the destination workspace. Setting ACLs there would fail, so skipping.")
+                    continue
                 job_path = f'jobs/{current_job_id}'  # contains `/jobs/{job_id}` path
                 api = f'/preview/permissions/{job_path}'
                 # get acl permissions for jobs
