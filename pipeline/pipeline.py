@@ -77,7 +77,7 @@ class Pipeline:
             if os.path.exists(failed_task_log) and os.path.getsize(failed_task_log) > 0:
                 msg = f'{task.name} has failures. Refer to {failed_task_log} to see failures. Use --skip-tasks option to skip this step and continue the pipeline. (available tasks are in wmconstants.py in TASK_OBJECTS Terminating pipeline.'
                 logging.info(msg)
-                raise RuntimeError(msg)
+                # raise RuntimeError(msg)
             self._completed_steps.write(f'{task.name}')
         else:
             logging.info(f'{task.name} Skipped.')
